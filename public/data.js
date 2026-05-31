@@ -635,6 +635,13 @@ window.BEANY_DATA = {
           "identity_code": "木_正印_中年"
         },
         "day5_decision": {
+          "weights": {
+            "木": 35.0,
+            "火": 16.0,
+            "土": 24.0,
+            "金": 9.0,
+            "水": 21.0
+          },
           "dominant": "木",
           "health": 79,
           "5_axis": {

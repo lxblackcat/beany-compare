@@ -83,21 +83,23 @@ function renderSummaries() {
 function drawCharts() {
   const dpr=window.devicePixelRatio||1, pad={t:20,b:28,l:42,r:10}, M=24;
 
-  // 5-axis
-  const c1=document.getElementById("chart-5axis"); if(!c1)return;
-  const pw=c1.parentElement.clientWidth-M||400;
-  c1.width=pw*dpr;c1.height=220*dpr;c1.style.width=pw+"px";c1.style.height="220px";
-  const cx=c1.getContext("2d");cx.scale(dpr,dpr);cx.clearRect(0,0,pw,220);
-  const pw2=pw-pad.l-pad.r,ph=220-pad.t-pad.b;
+  // 5-axis (separate charts for each run)
+  [L,R].forEach((id,ri)=>{
+    const id2=ri?"chart-5axis-right":"chart-5axis-left", lb=ri?"食神":"正印";
+    const c1=document.getElementById(id2);if(!c1)return;
+    const pw=c1.parentElement.clientWidth-M||300;
+    c1.width=pw*dpr;c1.height=200*dpr;c1.style.width=pw+"px";c1.style.height="200px";
+    const cx=c1.getContext("2d");cx.scale(dpr,dpr);cx.clearRect(0,0,pw,200);
+    const pw2=pw-pad.l-pad.r,ph=200-pad.t-pad.b;
 
-  // grid
-  cx.strokeStyle="rgba(255,255,255,0.06)";cx.fillStyle="#777";cx.font="9px sans-serif";cx.textAlign="right";
-  for(let v=0;v<=0.4;v+=0.1){const y=pad.t+ph-(v/0.4)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText((v*100)+"%",pad.l-4,y+3);}
-  cx.textAlign="center";cx.fillStyle="#777";cx.font="9px sans-serif";
-  DAYS.forEach((d,i)=>cx.fillText(d,pad.l+(i/(DAYS.length-1))*pw2,220-6));
+    // grid + labels
+    cx.strokeStyle="rgba(255,255,255,0.06)";cx.fillStyle="#777";cx.font="9px sans-serif";cx.textAlign="right";
+    for(let v=0;v<=0.4;v+=0.1){const y=pad.t+ph-(v/0.4)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText((v*100)+"%",pad.l-4,y+3);}
+    cx.textAlign="center";cx.fillStyle="#777";cx.font="9px sans-serif";
+    DAYS.forEach((d,i)=>cx.fillText(d.replace("_decision","").replace("_update",""),pad.l+(i/(DAYS.length-1))*pw2,200-6));
 
-  AXIS_N.forEach((ax,ai)=>{
-    [L,R].forEach((id,ri)=>{
+    // Draw lines for each axis
+    AXIS_N.forEach((ax,ai)=>{
       const pts=[];
       DAYS.forEach((d,i)=>{
         const e=D()[id].timeline[d+"_decision"]||D()[id].timeline[d+"_update"]||D()[id].timeline[d];
@@ -105,18 +107,15 @@ function drawCharts() {
         pts.push({x:pad.l+(i/(DAYS.length-1))*pw2,y:pad.t+ph-(v/0.4)*ph});
       });
       if(pts.length<2)return;
-      cx.beginPath();cx.strokeStyle=AXIS_COLORS[ai];cx.lineWidth=ri?1.5:2;cx.setLineDash(ri?[4,3]:[]);
-      pts.forEach((p,i)=>i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y));cx.stroke();cx.setLineDash([]);
-      pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,ri?2.5:3,0,7);cx.fillStyle=AXIS_COLORS[ai];cx.fill();});
+      cx.beginPath();cx.strokeStyle=AXIS_COLORS[ai];cx.lineWidth=2;
+      pts.forEach((p,i)=>i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y));cx.stroke();
+      pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,3,0,7);cx.fillStyle=AXIS_COLORS[ai];cx.fill();});
     });
-  });
 
-  // Legend
-  cx.textAlign="left";cx.font="10px sans-serif";let ly=5;
-  AXIS_L.forEach((l,i)=>{cx.fillStyle=AXIS_COLORS[i];cx.fillRect(pw-74,ly,10,2);cx.fillStyle="#999";cx.fillText(l,pw-60,ly+4);ly+=13;});
-  ly+=4;cx.strokeStyle="#999";cx.lineWidth=2;cx.setLineDash([]);
-  cx.beginPath();cx.moveTo(pw-74,ly);cx.lineTo(pw-60,ly);cx.stroke();cx.fillText("正印",pw-56,ly+4);ly+=13;
-  cx.strokeStyle="#999";cx.setLineDash([4,3]);cx.beginPath();cx.moveTo(pw-74,ly);cx.lineTo(pw-60,ly);cx.stroke();cx.setLineDash([]);cx.fillText("食神",pw-56,ly+4);
+    // Legend (top-right)
+    cx.textAlign="left";cx.font="10px sans-serif";let ly=5;
+    AXIS_L.forEach((l,i)=>{cx.fillStyle=AXIS_COLORS[i];cx.fillRect(pw-60,ly,10,2);cx.fillStyle="#999";cx.fillText(l,pw-46,ly+4);ly+=13;});
+  });
 
   // Weights (left = 正印, right = 食神)
   [L,R].forEach((id,ri)=>{

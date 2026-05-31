@@ -309,7 +309,7 @@
   }
   
   /* Weights chart */
-  .weights-vis { display: flex; gap: 4px; margin-top: 8px; }
+  .weights-vis { display: flex; gap: 4px; margin-top: 8px; flex-wrap: nowrap; overflow-x: auto; }
   .weight-bar { height: 20px; border-radius: 3px; min-width: 4px; transition: width 0.3s; text-align: center; font-size: 10px; line-height: 20px; color: #fff; font-weight: 600; }
   .w-wood { background: #4ade80; }
   .w-fire { background: #f87171; }
@@ -427,8 +427,12 @@
     <div class="overview-grid" id="run-summaries"></div>
     <div class="chart-section" style="display:flex;gap:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:280px">
-        <h3>📈 5-Axis 性格演化（正印 vs 食神）</h3>
-        <canvas class="chart" id="chart-5axis" style="height:220px"></canvas>
+        <h3>📈 5-Axis 性格演化（正印）</h3>
+        <canvas class="chart" id="chart-5axis-left" style="height:200px"></canvas>
+      </div>
+      <div style="flex:1;min-width:280px">
+        <h3>📈 5-Axis 性格演化（食神）</h3>
+        <canvas class="chart" id="chart-5axis-right" style="height:200px"></canvas>
       </div>
     </div>
     <div class="chart-section" style="display:flex;gap:12px;flex-wrap:wrap">

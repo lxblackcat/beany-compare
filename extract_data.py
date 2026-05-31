@@ -77,6 +77,12 @@ def extract_timeline(run_dir, run_id):
             m = re.search(r'after:\s*\{([^}]+)\}', txt)
             if m: w = parse_weights_inline(m.group(1))
             else: w = parse_weights_table(txt)
+            if not w:
+                # Fallback: find element + % anywhere
+                w = {}
+                for elem in ['木','火','土','金','水']:
+                    mm = re.search(rf'{elem}\s+(\d+)%', txt)
+                    if mm: w[elem] = float(mm.group(1))
             if w: entry["weights"] = w
 
             # Dominant
