@@ -189,7 +189,7 @@ def main():
     for run_id in RUNS:
         run_dir = f"{BASE}/{run_id}"
         rd = {
-            "name": "正印型性格 · 木" if "zhengyin" in run_id else "食神型性格 · 木",
+            "name": "正印 · 情感依赖型主人 · 木" if "zhengyin" in run_id else "食神 · 情感依赖型主人 · 木",
             "shishen": "正印" if "zhengyin" in run_id else "食神",
             "nodes": {},
             "timeline": extract_timeline(run_dir, run_id)

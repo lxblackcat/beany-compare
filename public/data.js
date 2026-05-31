@@ -1,7 +1,7 @@
 window.BEANY_DATA = {
   "runs": {
     "run_02_p06_zhengyin": {
-      "name": "正印型性格 · 木",
+      "name": "正印 · 情感依赖型主人 · 木",
       "shishen": "正印",
       "nodes": {
         "day1_N1": {
@@ -774,7 +774,7 @@ window.BEANY_DATA = {
       }
     },
     "run_03_p06_shishen": {
-      "name": "食神型性格 · 木",
+      "name": "食神 · 情感依赖型主人 · 木",
       "shishen": "食神",
       "nodes": {
         "day1_N1": {
