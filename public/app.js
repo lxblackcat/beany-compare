@@ -139,7 +139,7 @@ function renderSummaries() {
 // ===== Render: Charts =====
 function renderCharts() {
   const data = window.BEANY_DATA.runs;
-  const allDays = ["day0","day1","day2","day3","day4","day5","day6","day7"];
+  const allDays = ["day0","day1","day2","day3"];
   const axisNames = ["attachment","trust","stability","energy","curiosity"];
   const axisLabels = ["Attachment","Trust","Stability","Energy","Curiosity"];
 
@@ -334,7 +334,7 @@ function renderWeightsChart() {
   const pad = { top: 20, bottom: 24, left: 36, right: 60 };
   const cw = W - pad.left - pad.right;
   const ch = H - pad.top - pad.bottom;
-  const allDays = ["day0","day1","day2","day3","day4","day5","day6","day7"];
+  const allDays = ["day0","day1","day2","day3"];
   const wlabels = ["木","火","土","金","水"];
 
   const runColors = [LEFT_ID, RIGHT_ID];
