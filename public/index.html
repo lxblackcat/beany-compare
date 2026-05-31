@@ -333,6 +333,46 @@
   .stat-card .stat-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
   .stat-card .stat-header h4 { font-size: 14px; }
   .stat-card .stat-votes { font-size: 12px; color: var(--text2); }
+
+  /* Ranking */
+  .rank-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .rank-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text2);
+    min-width: 32px;
+    text-align: center;
+  }
+  .rank-number.gold { color: #fbbf24; }
+  .rank-number.silver { color: #94a3b8; }
+  .rank-number.bronze { color: #d97706; }
+  .rank-content { flex: 1; }
+  .rank-content .response-text { font-size: 14px; margin: 2px 0; }
+  .rank-content .response-sub { font-size: 12px; color: var(--text2); }
+  .rank-votes {
+    text-align: right;
+    min-width: 60px;
+  }
+  .rank-votes .count { font-size: 18px; font-weight: 700; }
+  .rank-votes .label { font-size: 11px; color: var(--text2); }
+  .rank-run-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .rank-run-badge.left { background: var(--accent-left-dim); color: var(--accent-left); }
+  .rank-run-badge.right { background: var(--accent-right-dim); color: var(--accent-right); }
   
   .stat-result-bar {
     height: 24px;
@@ -377,6 +417,7 @@
 <div class="tabs">
   <div class="tab active" data-tab="overview">📊 概览</div>
   <div class="tab" data-tab="compare">⚖️ 节点对比</div>
+  <div class="tab" data-tab="ranking">🏆 点赞榜</div>
   <div class="tab" data-tab="stats">📈 投票统计</div>
 </div>
 
@@ -384,23 +425,32 @@
   <!-- Overview Tab -->
   <div class="panel active" id="panel-overview">
     <div class="overview-grid" id="run-summaries"></div>
-    <div class="chart-section">
-      <h3>📈 5-Axis 性格演化</h3>
-      <canvas class="chart" id="chart-5axis"></canvas>
+    <div class="chart-section" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:280px">
+        <h3>📈 5-Axis 性格演化（正印 vs 食神）</h3>
+        <canvas class="chart" id="chart-5axis" style="height:220px"></canvas>
+      </div>
     </div>
-    <div class="chart-section">
-      <h3>🏥 健康分变化</h3>
-      <canvas class="chart" id="chart-health"></canvas>
-    </div>
-    <div class="chart-section">
-      <h3>⚖️ 权重演化</h3>
-      <canvas class="chart" id="chart-weights" style="height:300px"></canvas>
+    <div class="chart-section" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:280px">
+        <h3>⚖️ 五行权重演化（正印）</h3>
+        <canvas class="chart" id="chart-weights-left" style="height:240px"></canvas>
+      </div>
+      <div style="flex:1;min-width:280px">
+        <h3>⚖️ 五行权重演化（食神）</h3>
+        <canvas class="chart" id="chart-weights-right" style="height:240px"></canvas>
+      </div>
     </div>
   </div>
 
   <!-- Compare Tab -->
   <div class="panel" id="panel-compare">
     <div id="node-list"></div>
+  </div>
+
+  <!-- Ranking Tab -->
+  <div class="panel" id="panel-ranking">
+    <div id="ranking-list"></div>
   </div>
 
   <!-- Stats Tab -->
