@@ -94,7 +94,7 @@ function drawCharts() {
 
     // grid + labels
     cx.strokeStyle="rgba(255,255,255,0.06)";cx.fillStyle="#777";cx.font="9px sans-serif";cx.textAlign="right";
-    for(let v=0;v<=0.5;v+=0.1){const y=pad.t+ph-(v/0.5)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText((v*100)+"%",pad.l-4,y+3);}
+    for(let v=0;v<=0.5;v+=0.1){const y=pad.t+ph-(v/0.5)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText(Math.round(v*100)+"%",pad.l-4,y+3);}
     cx.textAlign="center";cx.fillStyle="#777";cx.font="9px sans-serif";
     DAYS.forEach((d,i)=>cx.fillText(d.replace("_decision","").replace("_update",""),pad.l+(i/(DAYS.length-1))*pw2,200-6));
 
