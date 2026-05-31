@@ -16,9 +16,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "node_id and preference (left|right) required" });
   }
 
-  // Try Upstash Redis (via UPSTASH_REDIS_REST_URL + TOKEN env vars)
-  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Try Upstash Redis (via KV_REST_API_URL + TOKEN env vars)
+  const redisUrl = process.env.KV_REST_API_URL;
+  const redisToken = process.env.KV_REST_API_TOKEN;
   if (redisUrl && redisToken) {
     try {
       // Read current votes
