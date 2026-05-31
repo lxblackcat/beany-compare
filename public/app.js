@@ -1,386 +1,297 @@
-// ===== Configuration =====
-const API_BASE = window.location.origin;
-const RUN_IDS = ["run_02_p06_zhengyin", "run_03_p06_shishen"];
-const LEFT_ID = RUN_IDS[0], RIGHT_ID = RUN_IDS[1];
-const ELEMENT_COLORS = { "木":"#4ade80","火":"#f87171","土":"#fbbf24","金":"#a1a1aa","水":"#60a5fa" };
+// ===== Simplified Beany Compare App =====
+const API = window.location.origin;
+const L = "run_02_p06_zhengyin", R = "run_03_p06_shishen";
+const ELEM = ["木","火","土","金","水"];
+const ELEM_COLORS = {"木":"#4ade80","火":"#f87171","土":"#fbbf24","金":"#a1a1aa","水":"#60a5fa"};
 const AXIS_COLORS = ["#4ade80","#60a5fa","#fbbf24","#fb923c","#a78bfa"];
-const AXIS_NAMES = ["attachment","trust","stability","energy","curiosity"];
-const AXIS_LABELS = ["Attachment","Trust","Stability","Energy","Curiosity"];
-const ELEM_CN = {"wood":"木","fire":"火","earth":"土","metal":"金","water":"水"};
-const COMPARE_NODES = ["day1_N1","day1_N2","day2_N1","day2_N2","day3_N1","day3_N2"];
+const NODES = ["day1_N1","day1_N2","day2_N1","day2_N2","day3_N1","day3_N2"];
 const DAYS = ["day0","day1","day2","day3","day4","day5","day6","day7"];
+const AXIS_N = ["attachment","trust","stability","energy","curiosity"];
+const AXIS_L = ["Attach","Trust","Stabil","Energy","Curios"];
 
 let votes = {}, userVotes = {};
+const D = () => window.BEANY_DATA.runs;
 
-function normalizeWeights(w) {
-  if (!w) return {};
-  const out = {};
-  for (const [k,v] of Object.entries(w)) out[ELEM_CN[k] || k] = v;
-  return out;
+function nw(w) {
+  if(!w) return {};
+  const o={};
+  for(const[k,v]of Object.entries(w)) o[k in{wood:1,fire:1,earth:1,metal:1,water:1}?{wood:"木",fire:"火",earth:"土",metal:"金",water:"水"}[k]:k]=v;
+  return o;
 }
 
-// ===== API =====
+// Tab switching
+function switchTab(t) {
+  document.querySelectorAll(".tab,.panel").forEach(e=>e.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${t}"]`).classList.add("active");
+  document.getElementById(`panel-${t}`).classList.add("active");
+  if(t==="overview") setTimeout(drawCharts,100);
+}
+
+// Load votes
 async function loadVotes() {
-  try { const r = await fetch(`${API_BASE}/api/stats`); if(r.ok) votes = await r.json(); } catch(e) {}
-  try { const s = localStorage.getItem("beany_votes"); if(s) userVotes = JSON.parse(s); } catch(e) {}
+  try{const r=await fetch(API+"/api/stats");if(r.ok)votes=await r.json()}catch(e){}
+  try{const s=localStorage.getItem("beany_votes");if(s)userVotes=JSON.parse(s)}catch(e){}
 }
 
-async function submitVote(voteKey, pref) {
-  if (!votes[voteKey]) votes[voteKey] = {left:0,right:0};
-  votes[voteKey][pref]++; userVotes[voteKey] = pref;
-  localStorage.setItem("beany_votes", JSON.stringify(userVotes));
-  updateVoteUI();
-  await fetch(`${API_BASE}/api/vote`, {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({node_id:voteKey, preference:pref})
-  }).catch(()=>{});
+// Submit vote
+async function doVote(vk,pref){
+  if(!votes[vk])votes[vk]={left:0,right:0};
+  votes[vk][pref]++;userVotes[vk]=pref;
+  localStorage.setItem("beany_votes",JSON.stringify(userVotes));
+  updateDisplay();
+  try{await fetch(API+"/api/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({node_id:vk,preference:pref})})}catch(e){}
 }
 
-function updateVoteUI() {
-  renderRanking();
-  document.querySelectorAll('[data-votekey]').forEach(el => {
-    const vk = el.dataset.votekey;
-    const v = votes[vk] || {left:0,right:0};
-    const total = v.left + v.right;
-    el.querySelector('.vote-stats').innerHTML =
-      `🌿 <span class="num">${v.left}</span> · 🟠 <span class="num">${v.right}</span> <span style="color:var(--text2)">(${total}票)</span>`;
-    el.querySelectorAll('.vote-btn').forEach(b => b.classList.toggle('selected', b.dataset.side === userVotes[vk]));
-    const bar = el.querySelector('.vote-progress-fill');
-    if (bar && total > 0) bar.style.width = (v.left/total*100).toFixed(0)+'%';
+function updateDisplay() {
+  document.querySelectorAll('[data-vk]').forEach(el=>{
+    const v=votes[el.dataset.vk]||{left:0,right:0}, t=v.left+v.right;
+    el.querySelector(".vs").innerHTML=`🌿<b>${v.left}</b>·🟠<b>${v.right}</b><span style="color:var(--text2);font-size:11px;margin-left:2px">(${t})</span>`;
+    el.querySelectorAll("button").forEach(b=>b.classList.toggle("sel",b.dataset.s===userVotes[el.dataset.vk]));
   });
   renderStats();
-}
-
-// ===== Init =====
-async function init() {
-  await loadVotes();
-  renderSummaries();
-  renderCharts();
-  renderNodeList();
   renderRanking();
-  renderStats();
-  setupTabs();
 }
 
-// ===== Summaries =====
+// ===== SUMMARIES =====
 function renderSummaries() {
-  const grid = document.getElementById("run-summaries");
-  grid.innerHTML = "";
-  const d = window.BEANY_DATA.runs;
-  RUN_IDS.forEach((rid, idx) => {
-    const r = d[rid], tl = r.timeline;
-    const days = Object.keys(tl).filter(k => k.startsWith("day") && k!=="day0" && tl[k].health);
-    const last = days.length ? tl[days[days.length-1]] : tl.day0;
-    const health = last?.health ?? 50, identity = last?.identity_code || "";
-    const axes = last?.["5_axis"] || tl.day0?.["5_axis"] || {};
-    const weights = normalizeWeights(last?.weights || tl.day0?.weights || {});
-    const accent = rid===LEFT_ID ? "var(--accent-left)" : "var(--accent-right)";
-    const side = rid===LEFT_ID ? "left" : "right";
-    const nodeCount = Object.keys(r.nodes).length;
+  const g=document.getElementById("run-summaries");g.innerHTML="";
+  [L,R].forEach((id,i)=>{
+    const r=D()[id],tl=r.timeline;
+    const ld=Object.keys(tl).filter(k=>k.startsWith("day")&&k!="day0"&&tl[k].health);
+    const last=ld.length?tl[ld[ld.length-1]]:tl.day0;
+    const h=last?.health??50,idc=last?.identity_code||"";
+    const ax=last?.["5_axis"]||tl.day0?.["5_axis"]||{};
+    const w=nw(last?.weights||tl.day0?.weights||{});
+    const ac=i?"var(--accent-right)":"var(--accent-left)",si=i?"right":"left";
+    
+    let axh=AXIS_N.map((n,ai)=>`<div style="display:flex;gap:4px;font-size:12px;padding:2px 0"><span style="width:55px;color:var(--text2)">${AXIS_L[ai]}</span><div style="flex:1;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden"><div style="width:${(ax[n]||0)*100}%;height:100%;background:${AXIS_COLORS[ai]};border-radius:3px"></div></div><span>${((ax[n]||0)*100).toFixed(1)}%</span></div>`).join("");
+    let wh=ELEM.map(e=>`<span style="display:inline-block;width:${(w[e]||0)*2}px;height:18px;background:${ELEM_COLORS[e]};border-radius:3px;font-size:10px;line-height:18px;text-align:center;color:#000;font-weight:600;margin-right:2px">${e}${Math.round(w[e]||0)}%</span>`).join("");
 
-    let axisHTML = AXIS_NAMES.map((n,i) => `<div class="axis-row">
-      <span class="name">${AXIS_LABELS[i]}</span>
-      <div class="axis-bar"><div class="axis-fill" style="width:${(axes[n]||0)*100}%;background:${AXIS_COLORS[i]}"></div></div>
-      <span style="font-size:12px">${((axes[n]||0)*100).toFixed(1)}%</span>
-    </div>`).join("");
-
-    let wHTML = ["木","火","土","金","水"].map(w => {
-      const p = (weights[w]||0)*2;
-      return p>0 ? `<div class="weight-bar w-${w}" style="width:${p}px">${w}${Math.round(weights[w])}%</div>` : "";
-    }).join("");
-
-    grid.innerHTML += `<div class="summary-card summary-${side}" style="border-left-color:${accent}">
-      <h3>${idx===0?'🌿':'🟠'} ${r.name}</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div><div class="label">终局人格</div><div class="value" style="font-size:15px">${identity||'—'}</div></div>
-        <div><div class="label">健康分</div><div class="value">${health}/100</div></div>
-        <div><div class="label">节点数</div><div class="value">${nodeCount}</div></div>
+    g.innerHTML+=`<div class="summary-card" style="border-left:3px solid ${ac}">
+      <h3>${i?'🟠':'🌿'} ${D()[id].name}</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:13px;margin:8px 0">
+        <div><span style="color:var(--text2)">终局</span> ${idc||'—'}</div>
+        <div><span style="color:var(--text2)">健康</span> ${h}</div>
       </div>
-      <div class="health-bar"><div class="health-fill ${health>70?'green':'amber'}" style="width:${health}%"></div></div>
-      <div class="label" style="margin:12px 0 4px">5-Axis</div>${axisHTML}
-      <div class="label" style="margin:8px 0 4px">五行权重</div><div class="weights-vis">${wHTML}</div>
+      <div style="margin:0 0 8px">${wh}</div>
+      ${axh}
     </div>`;
   });
 }
 
-// ===== Charts =====
-function renderCharts() {
-  const d = window.BEANY_DATA.runs;
-  const dpr = window.devicePixelRatio || 1;
-  const pad = {top:20,bottom:28,left:42,right:16};
-  const M = 32; // container margin
+// ===== CHARTS =====
+function drawCharts() {
+  const dpr=window.devicePixelRatio||1, pad={t:20,b:28,l:42,r:10}, M=24;
 
-  // --- 5-axis chart (one chart, lines by axis + dashed for 食神) ---
-  const c1 = document.getElementById("chart-5axis");
-  const r1 = c1.parentElement.getBoundingClientRect();
-  const W1 = r1.width - M;
-  c1.width = W1 * dpr; c1.height = 220 * dpr;
-  c1.style.width = W1+"px"; c1.style.height = "220px";
-  const ctx = c1.getContext("2d"); ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,W1,220);
-  const pw = W1 - pad.left - pad.right, ph = 220 - pad.top - pad.bottom;
+  // 5-axis
+  const c1=document.getElementById("chart-5axis"); if(!c1)return;
+  const pw=c1.parentElement.clientWidth-M||400;
+  c1.width=pw*dpr;c1.height=220*dpr;c1.style.width=pw+"px";c1.style.height="220px";
+  const cx=c1.getContext("2d");cx.scale(dpr,dpr);cx.clearRect(0,0,pw,220);
+  const pw2=pw-pad.l-pad.r,ph=220-pad.t-pad.b;
 
   // grid
-  ctx.strokeStyle = "rgba(255,255,255,0.06)";
-  ctx.fillStyle = "#7777aa"; ctx.font = "9px sans-serif";
-  ctx.textAlign = "right";
-  for(let v=0;v<=0.4;v+=0.1){
-    const y = pad.top + ph - (v/0.4)*ph;
-    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(W1-pad.right,y); ctx.stroke();
-    ctx.fillText((v*100).toFixed(0)+"%", pad.left-4, y+3);
-  }
+  cx.strokeStyle="rgba(255,255,255,0.06)";cx.fillStyle="#777";cx.font="9px sans-serif";cx.textAlign="right";
+  for(let v=0;v<=0.4;v+=0.1){const y=pad.t+ph-(v/0.4)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText((v*100)+"%",pad.l-4,y+3);}
+  cx.textAlign="center";cx.fillStyle="#777";cx.font="9px sans-serif";
+  DAYS.forEach((d,i)=>cx.fillText(d,pad.l+(i/(DAYS.length-1))*pw2,220-6));
 
-  // 5 axes × 2 runs
-  AXIS_NAMES.forEach((ax, ai) => {
-    ctx.strokeStyle = AXIS_COLORS[ai];
-    [LEFT_ID,RIGHT_ID].forEach((rid, ri) => {
-      const pts = [];
-      DAYS.forEach((dd, di) => {
-        const e = R[rid].timeline[dd+"_decision"] || R[rid].timeline[dd];
-        if(!e||!e["5_axis"]) return;
-        const v = e["5_axis"][ax];
-        if(v==null) return;
-        pts.push({x:pad.left+(di/(DAYS.length-1))*pw, y:pad.top+ph-(v/0.4)*ph});
+  AXIS_N.forEach((ax,ai)=>{
+    [L,R].forEach((id,ri)=>{
+      const pts=[];
+      DAYS.forEach((d,i)=>{
+        const e=D()[id].timeline[d+"_decision"]||D()[id].timeline[d+"_update"]||D()[id].timeline[d];
+        if(!e||!e["5_axis"])return;const v=e["5_axis"][ax];if(v==null)return;
+        pts.push({x:pad.l+(i/(DAYS.length-1))*pw2,y:pad.t+ph-(v/0.4)*ph});
       });
-      if(pts.length<2) return;
-      ctx.lineWidth = ri===0 ? 2 : 1.5;
-      ctx.setLineDash(ri===0 ? [] : [4,3]);
-      ctx.beginPath();
-      pts.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
-      ctx.stroke();
-      ctx.setLineDash([]);
-      pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x,p.y, ri===0?3:2.5, 0, Math.PI*2); ctx.fillStyle=AXIS_COLORS[ai]; ctx.fill(); });
+      if(pts.length<2)return;
+      cx.beginPath();cx.strokeStyle=AXIS_COLORS[ai];cx.lineWidth=ri?1.5:2;cx.setLineDash(ri?[4,3]:[]);
+      pts.forEach((p,i)=>i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y));cx.stroke();cx.setLineDash([]);
+      pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,ri?2.5:3,0,7);cx.fillStyle=AXIS_COLORS[ai];cx.fill();});
     });
   });
 
-  ctx.fillStyle="#7777aa"; ctx.font="9px sans-serif"; ctx.textAlign="center";
-  DAYS.forEach((d,di) => ctx.fillText(d.replace("_decision",""), pad.left+(di/(DAYS.length-1))*pw, 220-6));
+  // Legend
+  cx.textAlign="left";cx.font="10px sans-serif";let ly=5;
+  AXIS_L.forEach((l,i)=>{cx.fillStyle=AXIS_COLORS[i];cx.fillRect(pw-74,ly,10,2);cx.fillStyle="#999";cx.fillText(l,pw-60,ly+4);ly+=13;});
+  ly+=4;cx.strokeStyle="#999";cx.lineWidth=2;cx.setLineDash([]);
+  cx.beginPath();cx.moveTo(pw-74,ly);cx.lineTo(pw-60,ly);cx.stroke();cx.fillText("正印",pw-56,ly+4);ly+=13;
+  cx.strokeStyle="#999";cx.setLineDash([4,3]);cx.beginPath();cx.moveTo(pw-74,ly);cx.lineTo(pw-60,ly);cx.stroke();cx.setLineDash([]);cx.fillText("食神",pw-56,ly+4);
 
-  // legend
-  ctx.textAlign = "left";
-  let ly = 8;
-  AXIS_LABELS.forEach((l,ai) => { ctx.fillStyle=AXIS_COLORS[ai]; ctx.fillRect(W1-72,ly,10,2); ctx.font="10px sans-serif"; ctx.fillText(l, W1-58,ly+4); ly+=14; });
-  ly += 4;
-  ctx.strokeStyle="#999"; ctx.lineWidth=2; ctx.setLineDash([]);
-  ctx.beginPath(); ctx.moveTo(W1-72,ly); ctx.lineTo(W1-58,ly); ctx.stroke(); ctx.fillStyle="#999"; ctx.fillText("正印", W1-54,ly+4);
-  ly+=14;
-  ctx.strokeStyle="#999"; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(W1-72,ly); ctx.lineTo(W1-58,ly); ctx.stroke(); ctx.fillText("食神", W1-54,ly+4);
-  ctx.setLineDash([]);
-
-  // --- Weight chart (separate per run) ---
-  [LEFT_ID,RIGHT_ID].forEach((rid, ri) => {
-    const id = ri===0 ? "chart-weights-left" : "chart-weights-right";
-    const c = document.getElementById(id);
-    if(!c) return;
-    const r = c.parentElement.getBoundingClientRect();
-    const cw = r.width - M;
-    c.width = cw * dpr; c.height = 240 * dpr;
-    c.style.width = cw+"px"; c.style.height = "240px";
-    const cx = c.getContext("2d"); cx.scale(dpr,dpr);
-    cx.clearRect(0,0,cw,240);
-
-    const rowH = (240-pad.top-pad.bottom)/5;
-    ["木","火","土","金","水"].forEach((elem, ei) => {
-      const y = pad.top + ei * rowH;
-      cx.fillStyle = ELEMENT_COLORS[elem]; cx.font = "10px sans-serif"; cx.textAlign="right";
-      cx.fillText(elem, pad.left-4, y+rowH/2+3);
-      DAYS.forEach((dd, di) => {
-        const e = R[rid].timeline[dd+"_decision"] || R[rid].timeline[dd];
-        if(!e||!e.weights) return;
-        const w = normalizeWeights(e.weights);
-        const pct = w[elem]||0;
-        if(pct===0) return;
-        const bx = pad.left + (di/(DAYS.length-1))*(cw-pad.left-pad.right) - 3;
-        const bw = (cw-pad.left-pad.right)/(DAYS.length-1)*0.4;
-        const bh = (pct/50)*(rowH-6);
-        cx.fillStyle = ELEMENT_COLORS[elem];
-        cx.globalAlpha = ri===0 ? 0.85 : 0.6;
-        cx.fillRect(bx, y+rowH-3-bh, bw, bh);
-        cx.globalAlpha = 1;
-        if(bh>10) { cx.fillStyle="#7777aa"; cx.font="8px sans-serif"; cx.textAlign="center"; cx.fillText(Math.round(pct)+"%", bx+bw/2, y+rowH-3-bh-2); }
+  // Weights (left = 正印, right = 食神)
+  [L,R].forEach((id,ri)=>{
+    const id2=ri?"chart-weights-right":"chart-weights-left", lb=ri?"食神":"正印";
+    const c2=document.getElementById(id2);if(!c2)return;
+    const w=c2.parentElement.clientWidth-M||300;
+    c2.width=w*dpr;c2.height=240*dpr;c2.style.width=w+"px";c2.style.height="240px";
+    const cx2=c2.getContext("2d");cx2.scale(dpr,dpr);cx2.clearRect(0,0,w,240);
+    const rowH=(240-pad.t-pad.b)/5;
+    ELEM.forEach((el,ei)=>{
+      const y=pad.t+ei*rowH;
+      cx2.fillStyle=ELEM_COLORS[el];cx2.font="11px sans-serif";cx2.textAlign="right";cx2.fillText(el,pad.l-4,y+rowH/2+3);
+      DAYS.forEach((d,i)=>{
+        const e=D()[id].timeline[d+"_decision"]||D()[id].timeline[d+"_update"]||D()[id].timeline[d];
+        if(!e||!e.weights)return;
+        const pct=nw(e.weights)[el]||0;if(pct===0)return;
+        const bx=pad.l+(i/(DAYS.length-1))*(w-pad.l-pad.r)-3,bw=(w-pad.l-pad.r)/(DAYS.length-1)*0.4,bh=(pct/50)*(rowH-6);
+        cx2.fillStyle=ELEM_COLORS[el];cx2.globalAlpha=ri?0.55:0.85;
+        cx2.fillRect(bx,y+rowH-3-bh,bw,bh);cx2.globalAlpha=1;
+        if(bh>8){cx2.fillStyle="#777";cx2.font="8px sans-serif";cx2.textAlign="center";cx2.fillText(Math.round(pct)+"%",bx+bw/2,y+rowH-3-bh-2);}
       });
     });
-    cx.fillStyle="#7777aa"; cx.font="9px sans-serif"; cx.textAlign="center";
-    DAYS.forEach((d,di) => cx.fillText(d.replace("_decision",""), pad.left+(di/(DAYS.length-1))*(cw-pad.left-pad.right), 240-6));
+    cx2.fillStyle="#777";cx2.font="9px sans-serif";cx2.textAlign="center";
+    DAYS.forEach((d,i)=>cx2.fillText(d,pad.l+(i/(DAYS.length-1))*(w-pad.l-pad.r),240-6));
   });
 }
 
-// ===== Node List =====
-function renderNodeList() {
-  const list = document.getElementById("node-list");
-  list.innerHTML = "";
-  const d = window.BEANY_DATA.runs;
-  COMPARE_NODES.forEach(nid => {
-    const ln = d[LEFT_ID].nodes[nid], rn = d[RIGHT_ID].nodes[nid];
-    if(!ln && !rn) return;
-    const dayNum = nid.match(/day(\d+)/)?.[1]||"?", sesNum = nid.match(/N(\d+)/)?.[1]||"?";
-    list.innerHTML += `<div class="node-card" data-node="${nid}">
+// ===== NODE COMPARISON =====
+function renderNodes() {
+  const list=document.getElementById("node-list");list.innerHTML="";
+  NODES.forEach(nid=>{
+    const ln=D()[L].nodes[nid],rn=D()[R].nodes[nid];
+    if(!ln&&!rn)return;
+    const dn=nid.match(/day(\d+)/)[1]||"?",sn=nid.match(/N(\d+)/)[1]||"?";
+    list.innerHTML+=`<div class="node-card">
       <div class="node-header" onclick="toggleNode('${nid}')">
-        <span class="day-badge">Day ${dayNum} · N${sesNum}</span>
-        <span class="event-name">
-          <span style="color:var(--accent-left)">${ln?.event_type||'—'}</span>
-          <span style="color:var(--text2)"> / </span>
-          <span style="color:var(--accent-right)">${rn?.event_type||'—'}</span>
-        </span>
+        <span class="day-badge">Day ${dn}·N${sn}</span>
+        <span class="event-name"><span style="color:var(--accent-left)">${ln?.event_type||'—'}</span><span style="color:var(--text2);margin:0 4px">/</span><span style="color:var(--accent-right)">${rn?.event_type||'—'}</span></span>
         <span class="arrow">▼</span>
       </div>
-      <div class="node-body" id="body-${nid}"><div id="grid-${nid}" class="compare-grid"></div></div>
+      <div class="node-body" id="nb-${nid}" style="display:none">
+        <div style="padding:12px" id="content-${nid}"></div>
+      </div>
     </div>`;
-    renderNodeRounds(nid, ln, rn);
+    renderRounds(nid,ln,rn);
   });
 }
 
-function renderNodeRounds(nid, ln, rn) {
-  const grid = document.getElementById(`grid-${nid}`);
-  if(!grid) return;
-  const maxRounds = Math.max(ln?.beany_rounds?.length||0, rn?.beany_rounds?.length||0);
-
-  // Top bar: scene info (environment + personality delta)
-  let envHTML = "";
-  if(ln?.environment || rn?.environment) {
-    const leftEnv = ln?.environment ? `<div class="env-text">🏠 ${ln.environment}</div>` : '';
-    const rightEnv = rn?.environment ? `<div class="env-text">🏠 ${rn.environment}</div>` : '';
-    const leftDelta = renderDelta(ln?.personality_delta);
-    const rightDelta = renderDelta(rn?.personality_delta);
-    envHTML = `<div style="grid-column:1/-1;margin-bottom:8px"><div class="compare-grid" style="padding:0">
-      <div class="compare-side side-left" style="border-top:3px solid var(--accent-left)"><div class="run-label" style="color:var(--accent-left)">🌿 正印 · 场景</div>${leftEnv}${leftDelta}</div>
-      <div class="compare-side side-right" style="border-top:3px solid var(--accent-right)"><div class="run-label" style="color:var(--accent-right)">🟠 食神 · 场景</div>${rightEnv}${rightDelta}</div>
-    </div></div>`;
-  }
-  grid.innerHTML = envHTML;
-
-  // Rounds
-  for(let ri=0; ri<maxRounds; ri++) {
-    const lr = ln?.beany_rounds?.[ri] || null;
-    const rr = rn?.beany_rounds?.[ri] || null;
-    const roundLabel = `R${String(ri+1).padStart(2,'0')}`;
-    const voteKey = `${nid}_${roundLabel}`;
-    const v = votes[voteKey] || {left:0,right:0};
-    const total = v.left + v.right;
-
-    grid.innerHTML += `<div style="grid-column:1/-1">
-      <div style="font-size:12px;color:var(--text2);margin:6px 0 4px;font-weight:500">Round ${ri+1}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div class="compare-side side-left" style="border-top:3px solid var(--accent-left)">
-          ${lr ? `<div class="beany-round">${lr.mood?`<div class="mood">💭 ${lr.mood}</div>`:''}${lr.meaning?`<div class="meaning">📝 ${lr.meaning}</div>`:''}${lr.action?`<div class="action">👋 ${lr.action}</div>`:''}</div>` : '<div style="padding:12px;text-align:center;color:var(--text2);font-size:12px">无此轮数据</div>'}
-        </div>
-        <div class="compare-side side-right" style="border-top:3px solid var(--accent-right)">
-          ${rr ? `<div class="beany-round">${rr.mood?`<div class="mood">💭 ${rr.mood}</div>`:''}${rr.meaning?`<div class="meaning">📝 ${rr.meaning}</div>`:''}${rr.action?`<div class="action">👋 ${rr.action}</div>`:''}</div>` : '<div style="padding:12px;text-align:center;color:var(--text2);font-size:12px">无此轮数据</div>'}
-        </div>
+function renderRounds(nid,ln,rn){
+  const c=document.getElementById(`content-${nid}`);if(!c)return;
+  let h="";
+  // Environment
+  if(ln?.environment||rn?.environment){
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;border-top:3px solid var(--accent-left)">
+        <div style="color:var(--accent-left);font-size:12px;font-weight:600;margin-bottom:4px">🌿 正印 · 场景</div>
+        ${ln?.environment?`<div style="font-size:12px;color:var(--text2);line-height:1.5">🏠 ${ln.environment}</div>`:''}
+        ${deltaHTML(ln?.personality_delta)}
       </div>
-      <div class="vote-area" data-votekey="${voteKey}">
-        <button class="vote-btn left" data-side="left" onclick="submitVote('${voteKey}','left')">🌿</button>
-        <button class="vote-btn right" data-side="right" onclick="submitVote('${voteKey}','right')">🟠</button>
-        <span class="vote-stats">🌿 <span class="num">${v.left}</span> · 🟠 <span class="num">${v.right}</span> <span style="color:var(--text2)">(${total}票)</span></span>
-        ${total>0 ? `<div class="vote-progress"><div class="vote-progress-fill left-fill" style="width:${(v.left/total*100).toFixed(0)}%"></div></div><span style="font-size:11px;color:var(--text2)">${(v.right/total*100).toFixed(0)}%</span>` : ''}
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;border-top:3px solid var(--accent-right)">
+        <div style="color:var(--accent-right);font-size:12px;font-weight:600;margin-bottom:4px">🟠 食神 · 场景</div>
+        ${rn?.environment?`<div style="font-size:12px;color:var(--text2);line-height:1.5">🏠 ${rn.environment}</div>`:''}
+        ${deltaHTML(rn?.personality_delta)}
       </div>
     </div>`;
   }
-  updateVoteUI();
+  const mr=Math.max(ln?.beany_rounds?.length||0,rn?.beany_rounds?.length||0);
+  for(let ri=0;ri<mr;ri++){
+    const lr=ln?.beany_rounds?.[ri],rr=rn?.beany_rounds?.[ri];
+    const vk=nid+"_R"+String(ri+1).padStart(2,'0');
+    const v=votes[vk]||{left:0,right:0};
+    const t=v.left+v.right;
+    h+=`<div style="margin-bottom:8px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Round ${ri+1}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <div style="background:var(--surface2);border-radius:8px;padding:10px;border-top:3px solid var(--accent-left)">
+          ${lr?`<div>${lr.mood?'💭 '+lr.mood:''}</div><div style="color:var(--text2);font-size:12px">${lr.meaning?'📝 '+lr.meaning:''}</div><div style="font-weight:500">${lr.action?'👋 '+lr.action:''}</div>`:'<div style="color:var(--text2);font-size:12px">无此轮数据</div>'}
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px;border-top:3px solid var(--accent-right)">
+          ${rr?`<div>${rr.mood?'💭 '+rr.mood:''}</div><div style="color:var(--text2);font-size:12px">${rr.meaning?'📝 '+rr.meaning:''}</div><div style="font-weight:500">${rr.action?'👋 '+rr.action:''}</div>`:'<div style="color:var(--text2);font-size:12px">无此轮数据</div>'}
+        </div>
+      </div>
+      <div class="va" data-vk="${vk}" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(255,255,255,0.02);border-radius:8px">
+        <button class="vb" data-s="left" onclick="doVote('${vk}','left')" style="padding:3px 10px;border-radius:12px;border:2px solid var(--accent-left);background:transparent;color:var(--accent-left);font-size:14px;cursor:pointer">🌿</button>
+        <button class="vb" data-s="right" onclick="doVote('${vk}','right')" style="padding:3px 10px;border-radius:12px;border:2px solid var(--accent-right);background:transparent;color:var(--accent-right);font-size:14px;cursor:pointer">🟠</button>
+        <span class="vs">🌿<b>${v.left}</b>·🟠<b>${v.right}</b><span style="color:var(--text2);font-size:11px;margin-left:2px">(${t})</span></span>
+        ${t?`<div style="flex:1;max-width:100px;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden"><div class="pf" style="width:${(v.left/t*100).toFixed(0)}%;height:100%;background:var(--accent-left);border-radius:3px;transition:width 0.3s"></div></div>`:''}
+      </div>
+    </div>`;
+  }
+  c.innerHTML=h;
 }
 
-function renderDelta(d) {
-  if(!d||!Object.keys(d).length) return '';
-  return '<div class="delta-row">' +
-    Object.entries(d).map(([k,v])=>`<span class="delta-item">${k} <span class="delta-val ${v>0?'up':v<0?'down':'flat'}">${v>0?'↑+':v<0?'↓':''}${v||'→0'}</span></span>`).join('') +
+function deltaHTML(d){
+  if(!d||!Object.keys(d).length)return'';
+  return'<div style="display:flex;flex-wrap:wrap;gap:2px 8px;font-size:11px;color:var(--text2);margin-top:6px">'+
+    Object.entries(d).map(([k,v])=>`<span>${k} <b style="color:${v>0?'var(--accent-left)':v<0?'#f87171':'var(--text2)'}">${v>0?'↑':v<0?'↓':''}${v||'0'}</b></span>`).join('')+
     '</div>';
 }
 
-function toggleNode(nid) {
-  const card = document.querySelector(`.node-card[data-node="${nid}"]`);
-  const body = document.getElementById(`body-${nid}`);
-  card?.querySelector(".node-header")?.classList.toggle("open");
-  body?.classList.toggle("open");
+function toggleNode(nid){
+  const b=document.getElementById(`nb-${nid}`);
+  if(!b)return;
+  const o=b.style.display!=='none';
+  b.style.display=o?'none':'block';
+  b.parentElement.querySelector('.arrow').style.transform=o?'':'rotate(180deg)';
 }
 
-// ===== Stats =====
-function renderStats() {
-  const grid = document.getElementById("stats-grid");
-  grid.innerHTML = "";
-  COMPARE_NODES.forEach(nid => {
-    let left=0, right=0;
-    for(let ri=0;ri<8;ri++){
-      const v = votes[`${nid}_R${String(ri+1).padStart(2,'0')}`]||{left:0,right:0};
-      left+=v.left; right+=v.right;
-    }
-    const total=left+right;
-    if(total===0) return;
-    const lp = total>0?(left/total*100).toFixed(0):50;
-    const day=nid.match(/day(\d+)/)?.[1]||"?";
-    const winner = left>right?"🌿 正印":right>left?"🟠 食神":"⚖️ 平局";
-
-    let breakdown="";
-    for(let ri=0;ri<8;ri++){
-      const rl=`R${String(ri+1).padStart(2,'0')}`;
-      const v=votes[`${nid}_${rl}`]||{left:0,right:0};
-      if(v.left+v.right===0) continue;
-      breakdown+=`<span style="font-size:11px;color:var(--text2);margin-right:8px">${rl}: 🌿${v.left} 🟠${v.right}</span>`;
-    }
-
-    grid.innerHTML+=`<div class="stat-card">
-      <div class="stat-header"><h4>Day ${day} · ${nid.split('_N')[1]||"?"}</h4><div class="stat-votes">${total} 票</div></div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${breakdown}</div>
-      <div class="stat-result-bar"><div class="left-portion" style="width:${lp}%">${lp}%</div><div class="right-portion" style="width:${100-lp}%">${100-lp}%</div></div>
-      <div style="font-size:12px;display:flex;justify-content:space-between;color:var(--text2)"><span>🌿 ${left}</span><span style="font-weight:600">${winner}</span><span>${right} 🟠</span></div>
+// ===== STATS =====
+function renderStats(){
+  const g=document.getElementById("stats-grid");g.innerHTML="";
+  NODES.forEach(nid=>{
+    let l=0,r=0;
+    for(let i=0;i<8;i++){const v=votes[nid+'_R'+String(i+1).padStart(2,'0')]||{l:0,r:0};l+=v.left;r+=v.right;}
+    const t=l+r;if(!t)return;
+    const lp=(l/t*100).toFixed(0),dn=nid.match(/day(\d+)/)[1]||"?";
+    const w=l>r?"🌿 正印":r>l?"🟠 食神":"⚖️ 平局";
+    let bd="";
+    for(let i=0;i<8;i++){const v=votes[nid+'_R'+String(i+1).padStart(2,'0')]||{l:0,r:0};if(v.left+v.right)bd+=`<span style="font-size:11px;color:var(--text2);margin-right:6px">R${i+1}: 🌿${v.left} 🟠${v.right}</span>`;}
+    g.innerHTML+=`<div style="background:var(--surface);border-radius:12px;padding:16px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><b>Day ${dn}</b><span style="color:var(--text2);font-size:12px">${t}票</span></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${bd}</div>
+      <div style="height:24px;border-radius:6px;background:var(--surface2);overflow:hidden;display:flex;margin-bottom:4px">
+        <div style="width:${lp}%;background:var(--accent-left);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#000;min-width:24px">${lp}%</div>
+        <div style="flex:1;background:var(--accent-right);text-align:center;font-size:11px;font-weight:600;line-height:24px;color:#000">${(100-lp)}%</div>
+      </div>
+      <div style="font-size:12px;display:flex;justify-content:space-between;color:var(--text2)"><span>🌿 ${l}</span><span style="font-weight:600">${w}</span><span>${r} 🟠</span></div>
     </div>`;
   });
 }
 
-// ===== Tabs =====
-function setupTabs() {
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab,.panel").forEach(e => e.classList.remove("active"));
-      tab.classList.add("active");
-      const p = document.getElementById(`panel-${tab.dataset.tab}`);
-      if(p) p.classList.add("active");
-      if(tab.dataset.tab==="overview") setTimeout(renderCharts, 80);
-    });
-  });
-}
-
-document.addEventListener("DOMContentLoaded", init);
-
-
-// ===== Ranking =====
-function renderRanking() {
-  const list = document.getElementById("ranking-list");
-  if(!list) return;
-  const d = window.BEANY_DATA.runs;
-  const rank = [];
-
-  COMPARE_NODES.forEach(nid => {
-    const ln = d[LEFT_ID].nodes[nid], rn = d[RIGHT_ID].nodes[nid];
-    const maxR = Math.max(ln?.beany_rounds?.length||0, rn?.beany_rounds?.length||0);
-    for(let ri=0; ri<maxR; ri++) {
-      const vk = nid+"_R"+String(ri+1).padStart(2,'0');
-      const v = votes[vk] || {left:0,right:0};
-      if(v.left+v.right === 0) continue;
-      const lr = ln?.beany_rounds?.[ri];
-      if(lr) rank.push({run:"left",runName:"正印",node:nid,round:ri+1,mood:lr.mood,meaning:lr.meaning,action:lr.action,votes:v.left});
-      const rr = rn?.beany_rounds?.[ri];
-      if(rr) rank.push({run:"right",runName:"食神",node:nid,round:ri+1,mood:rr.mood,meaning:rr.meaning,action:rr.action,votes:v.right});
+// ===== RANKING =====
+function renderRanking(){
+  const list=document.getElementById("ranking-list");if(!list)return;
+  const rank=[];
+  NODES.forEach(nid=>{
+    const ln=D()[L].nodes[nid],rn=D()[R].nodes[nid];
+    const mr=Math.max(ln?.beany_rounds?.length||0,rn?.beany_rounds?.length||0);
+    for(let ri=0;ri<mr;ri++){
+      const vk=nid+'_R'+String(ri+1).padStart(2,'0');
+      const v=votes[vk]||{left:0,right:0};
+      if(v.left+v.right===0)continue;
+      if(ln?.beany_rounds?.[ri])rank.push({run:"left",nm:"正印",nid,ri,m:ln.beany_rounds[ri].mood,me:ln.beany_rounds[ri].meaning,a:ln.beany_rounds[ri].action,vt:v.left});
+      if(rn?.beany_rounds?.[ri])rank.push({run:"right",nm:"食神",nid,ri,m:rn.beany_rounds[ri].mood,me:rn.beany_rounds[ri].meaning,a:rn.beany_rounds[ri].action,vt:v.right});
     }
   });
-
-  rank.sort((a,b)=>b.votes-a.votes);
-  const top = rank.slice(0,10);
-  if(top.length===0) { list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2)">还没有投票数据 🤔</div>'; return; }
-
-  list.innerHTML = '<h3 style="margin-bottom:12px;font-size:16px">🏆 最受欢迎 Beany 响应 Top 10</h3>' +
+  rank.sort((a,b)=>b.vt-a.vt);
+  const top=rank.slice(0,10);
+  if(!top.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2)">还没有投票数据</div>';return;}
+  list.innerHTML='<h3 style="margin-bottom:12px">🏆 最受欢迎 Beany 响应 Top 10</h3>'+
     top.map((item,i)=>{
-      const cls=i===0?"gold":i===1?"silver":i===2?"bronze":"";
-      const dn=item.node.match(/day(\d+)/)?.[1]||"?", sn=item.node.match(/N(\d+)/)?.[1]||"?";
-      const badge=item.run==="left"?'<span class="rank-run-badge left">🌿 正印</span>':'<span class="rank-run-badge right">🟠 食神</span>';
-      return `<div class="rank-card">
-        <div class="rank-number ${cls}">${i+1}</div>
-        <div class="rank-content">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">${badge}<span style="font-size:12px;color:var(--text2)">Day ${dn} · N${sn} · R${item.round}</span></div>
-          <div class="response-text">${item.mood?'💭 '+item.mood:''}</div>
-          <div class="response-sub">${item.meaning?'📝 '+item.meaning:''}</div>
-          <div class="response-sub">${item.action?'👋 '+item.action:''}</div>
+      const c=i===0?"gold":i===1?"silver":i===2?"bronze":"";
+      const dn=item.nid.match(/day(\d+)/)[1]||"?",sn=item.nid.match(/N(\d+)/)[1]||"?";
+      const bg=item.run==="left"?'<span style="display:inline-block;padding:0 6px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(74,222,128,0.15);color:var(--accent-left)">🌿 正印</span>':'<span style="display:inline-block;padding:0 6px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(251,146,60,0.15);color:var(--accent-right)">🟠 食神</span>';
+      return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:10px;padding:10px 14px;border:1px solid var(--border);margin-bottom:6px">
+        <div style="font-size:20px;font-weight:700;min-width:30px;text-align:center;color:${i===0?'#fbbf24':i===1?'#94a3b8':i===2?'#d97706':'var(--text2)'}">${i+1}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">${bg}<span style="font-size:11px;color:var(--text2)">Day ${dn}·N${sn}·R${item.ri+1}</span></div>
+          <div style="font-size:13px">${item.m?'💭 '+item.m:''}</div>
+          <div style="font-size:12px;color:var(--text2)">${item.me?'📝 '+item.me:''}</div>
+          <div style="font-size:13px;font-weight:500">${item.a?'👋 '+item.a:''}</div>
         </div>
-        <div class="rank-votes"><div class="count">${item.votes}</div><div class="label">票</div></div>
+        <div style="text-align:right;min-width:40px"><div style="font-size:20px;font-weight:700">${item.vt}</div><div style="font-size:10px;color:var(--text2)">票</div></div>
       </div>`;
-    }).join('')+"<div style='margin-top:12px;font-size:12px;color:var(--text2);text-align:center'>正印和食神的响应各自计票，按票数排名</div>";
+    }).join('');
 }
+
+// ===== INIT =====
+async function init(){
+  await loadVotes();
+  renderSummaries();
+  setTimeout(drawCharts,50);
+  renderNodes();
+  renderStats();
+  renderRanking();
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.tab)));
+}
+document.addEventListener("DOMContentLoaded",init);
