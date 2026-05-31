@@ -171,12 +171,12 @@ function renderRounds(nid,ln,rn){
   if(ln?.environment||rn?.environment){
     h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
       <div style="background:var(--surface2);border-radius:8px;padding:10px;border-top:3px solid var(--accent-left)">
-        <div style="color:var(--accent-left);font-size:12px;font-weight:600;margin-bottom:4px">🌿 正印 · 场景</div>
+        <div style="color:var(--accent-left);font-size:12px;font-weight:600;margin-bottom:4px">🌿 正印型 · 场景</div>
         ${ln?.environment?`<div style="font-size:12px;color:var(--text2);line-height:1.5">🏠 ${ln.environment}</div>`:''}
         ${deltaHTML(ln?.personality_delta)}
       </div>
       <div style="background:var(--surface2);border-radius:8px;padding:10px;border-top:3px solid var(--accent-right)">
-        <div style="color:var(--accent-right);font-size:12px;font-weight:600;margin-bottom:4px">🟠 食神 · 场景</div>
+        <div style="color:var(--accent-right);font-size:12px;font-weight:600;margin-bottom:4px">🟠 食神型 · 场景</div>
         ${rn?.environment?`<div style="font-size:12px;color:var(--text2);line-height:1.5">🏠 ${rn.environment}</div>`:''}
         ${deltaHTML(rn?.personality_delta)}
       </div>
