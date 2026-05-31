@@ -4,7 +4,7 @@ const L = "run_02_p06_zhengyin", R = "run_03_p06_shishen";
 const ELEM = ["木","火","土","金","水"];
 const ELEM_COLORS = {"木":"#4ade80","火":"#f87171","土":"#fbbf24","金":"#a1a1aa","水":"#60a5fa"};
 const AXIS_COLORS = ["#4ade80","#60a5fa","#fbbf24","#fb923c","#a78bfa"];
-const NODES = ["day1_N1","day1_N2","day2_N1","day2_N2","day3_N1","day3_N2","day4_N1","day4_N2","day5_N1"];
+const NODES = ["day1_N1","day1_N2","day2_N1","day2_N2","day3_N1","day3_N2","day4_N1","day4_N2","day5_N1","day5_N2","day6_N1","day6_N2","day7_N1","day7_N2"];
 const DAYS = ["day0","day1","day2","day3","day4","day5","day6","day7"];
 const AXIS_N = ["attachment","trust","stability","energy","curiosity"];
 const AXIS_L = ["Attach","Trust","Stabil","Energy","Curios"];

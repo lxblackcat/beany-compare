@@ -556,6 +556,279 @@ window.BEANY_DATA = {
           ],
           "day": 5,
           "session": 1
+        },
+        "day5_N2": {
+          "event_type": "night_presence",
+          "environment": "卧室，大灯没开，壁灯调到最暗。窗外对面楼的窗户亮着几格。手机充着电，屏幕朝下扣在床头柜上。被子上还留着下午在阳台晒过的太阳味。",
+          "app_description": "你累得睡着了",
+          "app_emoji": "😴",
+          "5_axis": {
+            "attachment": 0.242,
+            "trust": 0.188,
+            "stability": 0.259,
+            "energy": 0.284,
+            "curiosity": 0.31
+          },
+          "personality_delta": {
+            "attachment": -0.005,
+            "trust": 0.005,
+            "stability": 0.01,
+            "energy": -0.015,
+            "curiosity": -0.005
+          },
+          "dominant_element": "wood",
+          "shishen": "正印",
+          "age_stage": "middle_age",
+          "round_count": 4,
+          "beany_rounds": [
+            {
+              "file": "R01_Beany.md",
+              "mood": "困倦",
+              "meaning": "需要被摸摸",
+              "action": "往她咯吱窝里钻了钻",
+              "raw": "# R01 — Beany\n\n心情：困倦\n意思：需要被摸摸\n动作：往她咯吱窝里钻了钻"
+            },
+            {
+              "file": "R02_Beany.md",
+              "mood": "安心",
+              "meaning": "被摸了，好",
+              "action": "稍微拱了一下，贴得更紧",
+              "raw": "# R02 — Beany\n\n心情：安心\n意思：被摸了，好\n动作：稍微拱了一下，贴得更紧"
+            },
+            {
+              "file": "R03_Beany.md",
+              "mood": "迷糊",
+              "meaning": "屋里安静下来了",
+              "action": "打了哈欠，不动了",
+              "raw": "# R03 — Beany\n\n心情：迷糊\n意思：屋里安静下来了\n动作：打了哈欠，不动了"
+            },
+            {
+              "file": "R04_Beany.md",
+              "mood": "睡着",
+              "meaning": "……",
+              "action": "蜷成一个小团，呼吸变轻",
+              "raw": "# R04 — Beany\n\n心情：睡着\n意思：……\n动作：蜷成一个小团，呼吸变轻"
+            }
+          ],
+          "day": 5,
+          "session": 2
+        },
+        "day6_N1": {
+          "event_type": "playful_engagement",
+          "environment": "周六上午，阳光透过百叶窗在木地板上投下一道道条纹。沙发上摊着一本翻到一半的漫画，旁边放着半杯橙汁。蓝牙音箱放着轻快的爵士乐，音量不大。",
+          "app_description": "周末啦，一起玩！",
+          "app_emoji": "🎵",
+          "5_axis": {
+            "attachment": 0.227,
+            "trust": 0.192,
+            "stability": 0.278,
+            "energy": 0.301,
+            "curiosity": 0.301
+          },
+          "personality_delta": {
+            "attachment": 0.005,
+            "trust": 0.005,
+            "stability": -0.01,
+            "energy": 0.015,
+            "curiosity": 0.01
+          },
+          "dominant_element": "metal",
+          "shishen": "正印",
+          "age_stage": "stable",
+          "round_count": 5,
+          "beany_rounds": [
+            {
+              "file": "R01_Beany.md",
+              "mood": "好奇",
+              "meaning": "醒了？今天有安排吗",
+              "action": "睁开一只眼看她，又闭上",
+              "raw": "# R01 — Beany\n\n心情：好奇\n意思：醒了？今天有安排吗\n动作：睁开一只眼看她，又闭上"
+            },
+            {
+              "file": "R02_Beany.md",
+              "mood": "来劲",
+              "meaning": "新玩具！",
+              "action": "坐起来，脖子跟着毛绒球转",
+              "raw": "# R02 — Beany\n\n心情：来劲\n意思：新玩具！\n动作：坐起来，脖子跟着毛绒球转"
+            },
+            {
+              "file": "R03_Beany.md",
+              "mood": "兴奋",
+              "meaning": "还要！",
+              "action": "追到床尾叼住毛绒球，又跑回来",
+              "raw": "# R03 — Beany\n\n心情：兴奋\n意思：还要！\n动作：追到床尾叼住毛绒球，又跑回来"
+            },
+            {
+              "file": "R04_Beany.md",
+              "mood": "满足",
+              "meaning": "玩够了",
+              "action": "吐着舌头蹲在腿上，尾巴轻轻晃",
+              "raw": "# R04 — Beany\n\n心情：满足\n意思：玩够了\n动作：吐着舌头蹲在腿上，尾巴轻轻晃"
+            },
+            {
+              "file": "R05_Beany.md",
+              "mood": "软了",
+              "meaning": "被亲了",
+              "action": "眯起眼睛，耳朵微微往后贴",
+              "raw": "# R05 — Beany\n\n心情：软了\n意思：被亲了\n动作：眯起眼睛，耳朵微微往后贴"
+            }
+          ],
+          "day": 6,
+          "session": 1
+        },
+        "day6_N2": {
+          "event_type": "routine_stable",
+          "environment": "傍晚，厨房里飘出炖汤的香气。抽油烟机嗡嗡地转着，灶上小火咕嘟咕嘟。切好的葱姜放在砧板上，还没下锅。冰箱门上贴着下周的排班表。",
+          "app_description": "安静的傍晚",
+          "app_emoji": "🍲",
+          "5_axis": {
+            "attachment": 0.232,
+            "trust": 0.197,
+            "stability": 0.268,
+            "energy": 0.316,
+            "curiosity": 0.311
+          },
+          "personality_delta": {
+            "attachment": 0.0,
+            "trust": 0.0,
+            "stability": 0.005,
+            "energy": -0.005,
+            "curiosity": -0.005
+          },
+          "dominant_element": "metal",
+          "shishen": "正印",
+          "age_stage": "stable",
+          "round_count": 3,
+          "beany_rounds": [
+            {
+              "file": "R01_Beany.md",
+              "mood": "期待",
+              "meaning": "好香",
+              "action": "蹲在厨房门口，尾巴尖轻轻扫着地面",
+              "raw": "# R01 — Beany\n\n心情：期待\n意思：好香\n动作：蹲在厨房门口，尾巴尖轻轻扫着地面"
+            },
+            {
+              "file": "R02_Beany.md",
+              "mood": "开心",
+              "meaning": "有吃的",
+              "action": "低头闻了闻草莓，小口小口地吃",
+              "raw": "# R02 — Beany\n\n心情：开心\n意思：有吃的\n动作：低头闻了闻草莓，小口小口地吃"
+            },
+            {
+              "file": "R03_Beany.md",
+              "mood": "困",
+              "meaning": "吃饱了，不动了",
+              "action": "在她肚子上摊开，四脚朝天",
+              "raw": "# R03 — Beany\n\n心情：困\n意思：吃饱了，不动了\n动作：在她肚子上摊开，四脚朝天"
+            }
+          ],
+          "day": 6,
+          "session": 2
+        },
+        "day7_N1": {
+          "event_type": "comfort_received",
+          "environment": "客厅，外面下着小雨。窗户上蒙了一层水雾。茶几上放着两杯热红茶，一杯还没动过。一本职场心理学的书扣在扶手上，读到中间夹了书签。",
+          "app_description": "下雨天，一起待着",
+          "app_emoji": "☕",
+          "5_axis": {
+            "attachment": 0.221,
+            "trust": 0.181,
+            "stability": 0.288,
+            "energy": 0.31,
+            "curiosity": 0.31
+          },
+          "personality_delta": {
+            "attachment": 0.01,
+            "trust": -0.005,
+            "stability": 0.01,
+            "energy": 0.005,
+            "curiosity": 0.01
+          },
+          "dominant_element": "wood",
+          "shishen": "正印",
+          "age_stage": "stable",
+          "round_count": 4,
+          "beany_rounds": [
+            {
+              "file": "R01_Beany.md",
+              "mood": "平静",
+              "meaning": "外面在下雨",
+              "action": "挨着她的大腿趴下，耳朵偶尔转动听雨声",
+              "raw": "# R01 — Beany\n\n心情：平静\n意思：外面在下雨\n动作：挨着她的大腿趴下，耳朵偶尔转动听雨声"
+            },
+            {
+              "file": "R02_Beany.md",
+              "mood": "认真",
+              "meaning": "在听她说",
+              "action": "抬起头看了她一眼，又把下巴搁回她腿上",
+              "raw": "# R02 — Beany\n\n心情：认真\n意思：在听她说\n动作：抬起头看了她一眼，又把下巴搁回她腿上"
+            },
+            {
+              "file": "R03_Beany.md",
+              "mood": "暖",
+              "meaning": "被需要了",
+              "action": "用额头抵着她的脸颊，不动",
+              "raw": "# R03 — Beany\n\n心情：暖\n意思：被需要了\n动作：用额头抵着她的脸颊，不动"
+            },
+            {
+              "file": "R04_Beany.md",
+              "mood": "安心",
+              "meaning": "就这样待着",
+              "action": "蜷在她胸口，发出轻微的呼噜声",
+              "raw": "# R04 — Beany\n\n心情：安心\n意思：就这样待着\n动作：蜷在她胸口，发出轻微的呼噜声"
+            }
+          ],
+          "day": 7,
+          "session": 1
+        },
+        "day7_N2": {
+          "event_type": "deep_bond_moment",
+          "environment": "卧室，只开着床头那盏黄色小台灯。刚洗过澡，空气里有沐浴露的淡香。窗帘留着一条缝，能看到外面远处的路灯和没有被云遮住的半个月亮。",
+          "app_description": "最后一天，舍不得睡",
+          "app_emoji": "💕",
+          "5_axis": {
+            "attachment": 0.221,
+            "trust": 0.181,
+            "stability": 0.288,
+            "energy": 0.31,
+            "curiosity": 0.31
+          },
+          "personality_delta": {
+            "attachment": 0.015,
+            "trust": 0.01,
+            "stability": 0.01,
+            "energy": -0.01,
+            "curiosity": -0.015
+          },
+          "dominant_element": "wood",
+          "shishen": "正印",
+          "age_stage": "stable",
+          "round_count": 3,
+          "beany_rounds": [
+            {
+              "file": "R01_Beany.md",
+              "mood": "依恋",
+              "meaning": "今晚不一样",
+              "action": "靠在她身侧，没有像往常那样闭眼",
+              "raw": "# R01 — Beany\n\n心情：依恋\n意思：今晚不一样\n动作：靠在她身侧，没有像往常那样闭眼"
+            },
+            {
+              "file": "R02_Beany.md",
+              "mood": "心软",
+              "meaning": "她说谢谢",
+              "action": "把脑袋往她掌心里顶了顶，又缩回来",
+              "raw": "# R02 — Beany\n\n心情：心软\n意思：她说谢谢\n动作：把脑袋往她掌心里顶了顶，又缩回来"
+            },
+            {
+              "file": "R03_Beany.md",
+              "mood": "安心",
+              "meaning": "晚安",
+              "action": "在枕头上调整了一下位置，贴着她的肩膀闭上了眼睛",
+              "raw": "# R03 — Beany\n\n心情：安心\n意思：晚安\n动作：在枕头上调整了一下位置，贴着她的肩膀闭上了眼睛"
+            }
+          ],
+          "day": 7,
+          "session": 2
         }
       },
       "timeline": {
