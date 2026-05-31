@@ -65,7 +65,7 @@ function renderSummaries() {
     const ac=i?"var(--accent-right)":"var(--accent-left)",si=i?"right":"left";
     
     let axh=AXIS_N.map((n,ai)=>`<div style="display:flex;gap:4px;font-size:12px;padding:2px 0"><span style="width:55px;color:var(--text2)">${AXIS_L[ai]}</span><div style="flex:1;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden"><div style="width:${(ax[n]||0)*100}%;height:100%;background:${AXIS_COLORS[ai]};border-radius:3px"></div></div><span>${((ax[n]||0)*100).toFixed(1)}%</span></div>`).join("");
-    let wh=ELEM.map(e=>`<span style="display:inline-block;width:${(w[e]||0)*2}px;height:18px;background:${ELEM_COLORS[e]};border-radius:3px;font-size:10px;line-height:18px;text-align:center;color:#000;font-weight:600;margin-right:2px">${e}${Math.round(w[e]||0)}%</span>`).join("");
+    let wh=ELEM.map(e=>`<span style="display:inline-block;width:${Math.max(20,(w[e]||0)*2.5)}px;height:20px;background:${ELEM_COLORS[e]};border-radius:4px;font-size:11px;line-height:20px;text-align:center;color:#000;font-weight:700;margin-right:3px;flex-shrink:0">${e}${Math.round(w[e]||0)}</span>`).join("");
 
     g.innerHTML+=`<div class="summary-card" style="border-left:3px solid ${ac}">
       <h3>${i?'🟠':'🌿'} ${D()[id].name}</h3>
@@ -94,7 +94,7 @@ function drawCharts() {
 
     // grid + labels
     cx.strokeStyle="rgba(255,255,255,0.06)";cx.fillStyle="#777";cx.font="9px sans-serif";cx.textAlign="right";
-    for(let v=0;v<=0.4;v+=0.1){const y=pad.t+ph-(v/0.4)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText((v*100)+"%",pad.l-4,y+3);}
+    for(let v=0;v<=0.5;v+=0.1){const y=pad.t+ph-(v/0.5)*ph;cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pw-pad.r,y);cx.stroke();cx.fillText((v*100)+"%",pad.l-4,y+3);}
     cx.textAlign="center";cx.fillStyle="#777";cx.font="9px sans-serif";
     DAYS.forEach((d,i)=>cx.fillText(d.replace("_decision","").replace("_update",""),pad.l+(i/(DAYS.length-1))*pw2,200-6));
 
@@ -104,7 +104,7 @@ function drawCharts() {
       DAYS.forEach((d,i)=>{
         const e=D()[id].timeline[d+"_decision"]||D()[id].timeline[d+"_update"]||D()[id].timeline[d];
         if(!e||!e["5_axis"])return;const v=e["5_axis"][ax];if(v==null)return;
-        pts.push({x:pad.l+(i/(DAYS.length-1))*pw2,y:pad.t+ph-(v/0.4)*ph});
+        pts.push({x:pad.l+(i/(DAYS.length-1))*pw2,y:pad.t+ph-(v/0.5)*ph});
       });
       if(pts.length<2)return;
       cx.beginPath();cx.strokeStyle=AXIS_COLORS[ai];cx.lineWidth=2;
@@ -229,12 +229,12 @@ function renderStats(){
   const g=document.getElementById("stats-grid");g.innerHTML="";
   NODES.forEach(nid=>{
     let l=0,r=0;
-    for(let i=0;i<8;i++){const v=votes[nid+'_R'+String(i+1).padStart(2,'0')]||{l:0,r:0};l+=v.left;r+=v.right;}
+    for(let i=0;i<8;i++){const v=votes[nid+'_R'+String(i+1).padStart(2,'0')]||{left:0,right:0};l+=v.left;r+=v.right;}
     const t=l+r;if(!t)return;
     const lp=(l/t*100).toFixed(0),dn=nid.match(/day(\d+)/)[1]||"?";
     const w=l>r?"🌿 正印":r>l?"🟠 食神":"⚖️ 平局";
     let bd="";
-    for(let i=0;i<8;i++){const v=votes[nid+'_R'+String(i+1).padStart(2,'0')]||{l:0,r:0};if(v.left+v.right)bd+=`<span style="font-size:11px;color:var(--text2);margin-right:6px">R${i+1}: 🌿${v.left} 🟠${v.right}</span>`;}
+    for(let i=0;i<8;i++){const v=votes[nid+'_R'+String(i+1).padStart(2,'0')]||{left:0,right:0};if(v.left+v.right)bd+=`<span style="font-size:11px;color:var(--text2);margin-right:6px">R${i+1}: 🌿${v.left} 🟠${v.right}</span>`;}
     g.innerHTML+=`<div style="background:var(--surface);border-radius:12px;padding:16px;border:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px"><b>Day ${dn}</b><span style="color:var(--text2);font-size:12px">${t}票</span></div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${bd}</div>
