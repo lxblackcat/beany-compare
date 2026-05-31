@@ -1,0 +1,12 @@
+{
+  "name": "beany-compare",
+  "version": "1.0.0",
+  "description": "Beany 性格模拟对比展示 · 正印 vs 食神",
+  "scripts": {
+    "extract": "python3 extract_data.py",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@vercel/kv": "^1.0.0"
+  }
+}

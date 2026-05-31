@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beany 性格对比 · 正印 vs 食神</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #24243a;
+    --text: #e8e8f0;
+    --text2: #9999b0;
+    --accent-left: #4ade80;
+    --accent-left-dim: rgba(74,222,128,0.15);
+    --accent-right: #fb923c;
+    --accent-right-dim: rgba(251,146,60,0.15);
+    --vote-bg: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  h1,h2,h3,h4 { font-weight: 600; }
+  
+  /* Header */
+  .header {
+    padding: 24px 20px;
+    text-align: center;
+    background: linear-gradient(180deg, #1a1a2e 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-size: 24px;
+    background: linear-gradient(90deg, var(--accent-left), #e8e8f0, var(--accent-right));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text2);
+    background: transparent;
+    border: 1px solid transparent;
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { color: #fff; background: var(--surface2); border-color: var(--border); }
+
+  /* Main content */
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  
+  /* Overview Dashboard */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .overview-grid { grid-template-columns: 1fr; }
+  }
+  
+  .summary-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .summary-card h3 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .summary-card .label { color: var(--text2); font-size: 12px; }
+  .summary-card .value { font-size: 18px; font-weight: 600; }
+  
+  .summary-left { border-left: 3px solid var(--accent-left); }
+  .summary-right { border-left: 3px solid var(--accent-right); }
+  
+  .health-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .health-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+  .health-fill.green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .health-fill.amber { background: linear-gradient(90deg, #f59e0b, #fb923c); }
+  
+  .axis-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+  .axis-row .name { color: var(--text2); }
+  .axis-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--surface2); margin: 0 8px; align-self: center; overflow: hidden; }
+  .axis-fill { height: 100%; border-radius: 3px; }
+  
+  /* Timeline chart canvas */
+  .chart-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .chart-section h3 { font-size: 15px; margin-bottom: 12px; color: var(--text2); }
+  canvas.chart { width: 100%; height: 200px; border-radius: 8px; }
+  
+  /* Node comparison cards */
+  .node-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .node-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    gap: 12px;
+    user-select: none;
+  }
+  .node-header:hover { background: rgba(255,255,255,0.02); }
+  .node-header .day-badge {
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .node-header .event-name { font-size: 14px; font-weight: 500; flex: 1; }
+  .node-header .round-count { color: var(--text2); font-size: 12px; }
+  .node-header .arrow { transition: transform 0.2s; color: var(--text2); font-size: 12px; }
+  .node-header.open .arrow { transform: rotate(180deg); }
+  
+  .node-body { display: none; }
+  .node-body.open { display: block; }
+  
+  /* Two-column comparison */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 16px 16px;
+  }
+  @media (max-width: 640px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+  
+  .compare-side {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .compare-side.side-left { border-top: 3px solid var(--accent-left); }
+  .compare-side.side-right { border-top: 3px solid var(--accent-right); }
+  
+  .compare-side .run-label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .side-left .run-label { color: var(--accent-left); }
+  .side-right .run-label { color: var(--accent-right); }
+  
+  .env-text {
+    font-size: 12px;
+    color: var(--text2);
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  
+  .beany-round {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .beany-round:last-child { border-bottom: none; }
+  .beany-round .round-num {
+    font-size: 11px;
+    color: var(--text2);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .beany-round .mood { font-size: 13px; }
+  .beany-round .meaning { font-size: 12px; color: var(--text2); }
+  .beany-round .action { font-size: 13px; font-weight: 500; margin-top: 2px; color: #c8c8d8; }
+  
+  /* Personality delta display */
+  .delta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    padding: 8px 10px;
+    font-size: 12px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+  .delta-row .delta-item { color: var(--text2); }
+  .delta-row .delta-val { font-weight: 600; }
+  .delta-val.up { color: #4ade80; }
+  .delta-val.down { color: #f87171; }
+  .delta-val.flat { color: var(--text2); }
+  
+  /* Vote area */
+  .vote-area {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--vote-bg);
+    border-top: 1px solid var(--border);
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .vote-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    background: var(--surface2);
+    color: var(--text2);
+  }
+  .vote-btn:hover { transform: scale(1.03); }
+  .vote-btn.left { border-color: var(--accent-left); color: var(--accent-left); }
+  .vote-btn.left:hover { background: var(--accent-left-dim); }
+  .vote-btn.right { border-color: var(--accent-right); color: var(--accent-right); }
+  .vote-btn.right:hover { background: var(--accent-right-dim); }
+  .vote-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+  .vote-btn.selected { background: var(--accent-left-dim); color: #fff; }
+  .vote-btn.selected.right { background: var(--accent-right-dim); }
+  
+  .vote-stats {
+    font-size: 13px;
+    color: var(--text2);
+    margin-left: 8px;
+  }
+  .vote-stats .num { font-weight: 600; color: var(--text); }
+  
+  .vote-progress {
+    flex: 1;
+    max-width: 160px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    overflow: hidden;
+    margin-left: 8px;
+  }
+  .vote-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .vote-progress-fill.left-fill { background: var(--accent-left); }
+  .vote-progress-fill.right-fill { background: var(--accent-right); }
+  
+  /* No interaction placeholder */
+  .no-interaction {
+    padding: 24px;
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+  }
+  .no-interaction .icon { font-size: 28px; margin-bottom: 8px; }
+  
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+  }
+  
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text2);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  
+  /* Weights chart */
+  .weights-vis { display: flex; gap: 4px; margin-top: 8px; }
+  .weight-bar { height: 20px; border-radius: 3px; min-width: 4px; transition: width 0.3s; text-align: center; font-size: 10px; line-height: 20px; color: #fff; font-weight: 600; }
+  .w-wood { background: #4ade80; }
+  .w-fire { background: #f87171; }
+  .w-earth { background: #fbbf24; }
+  .w-metal { background: #a1a1aa; }
+  .w-water { background: #60a5fa; }
+  
+  /* Stats tab */
+  .stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .stat-card .stat-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .stat-card .stat-header h4 { font-size: 14px; }
+  .stat-card .stat-votes { font-size: 12px; color: var(--text2); }
+  
+  .stat-result-bar {
+    height: 24px;
+    border-radius: 6px;
+    background: var(--surface2);
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 4px;
+  }
+  .stat-result-bar .left-portion {
+    background: var(--accent-left);
+    transition: width 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #000;
+    min-width: 24px;
+  }
+  .stat-result-bar .right-portion {
+    background: var(--accent-right);
+    transition: width 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #000;
+    min-width: 24px;
+  }
+  .stat-result-bar .empty-portion { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🐾 Beany 性格对比 · 正印 vs 食神</h1>
+  <p>同一背景（林小姐·木·幼年）不同十神下的 Beany 响应对比 · 投出你更喜欢的选择</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">📊 概览</div>
+  <div class="tab" data-tab="compare">⚖️ 节点对比</div>
+  <div class="tab" data-tab="stats">📈 投票统计</div>
+</div>
+
+<div class="container">
+  <!-- Overview Tab -->
+  <div class="panel active" id="panel-overview">
+    <div class="overview-grid" id="run-summaries"></div>
+    <div class="chart-section">
+      <h3>📈 5-Axis 性格演化</h3>
+      <canvas class="chart" id="chart-5axis"></canvas>
+    </div>
+    <div class="chart-section">
+      <h3>🏥 健康分变化</h3>
+      <canvas class="chart" id="chart-health"></canvas>
+    </div>
+    <div class="chart-section">
+      <h3>⚖️ 权重演化</h3>
+      <canvas class="chart" id="chart-weights" style="height:300px"></canvas>
+    </div>
+  </div>
+
+  <!-- Compare Tab -->
+  <div class="panel" id="panel-compare">
+    <div id="node-list"></div>
+  </div>
+
+  <!-- Stats Tab -->
+  <div class="panel" id="panel-stats">
+    <div class="stats-overview" id="stats-grid"></div>
+  </div>
+</div>
+
+<div class="footer">
+  Beany Simulation System · 正印 vs 食神 · 投票数据通过 Vercel KV 持久化
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
