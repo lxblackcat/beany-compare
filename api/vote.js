@@ -36,7 +36,7 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${redisToken}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(JSON.stringify(votes))
+        body: JSON.stringify(votes)
       });
       return res.json({ ok: true, votes: votes[node_id] });
     } catch (e) {
