@@ -588,7 +588,8 @@ window.BEANY_DATA = {
             "土": 20.0
           },
           "dominant": "木",
-          "health": 55
+          "health": 55,
+          "identity_code": "木_正印_幼年"
         },
         "day2_decision": {
           "weights": {
@@ -599,7 +600,8 @@ window.BEANY_DATA = {
             "土": 24.0
           },
           "dominant": "土",
-          "health": 60
+          "health": 60,
+          "identity_code": "土_正印_青年"
         },
         "day3_decision": {
           "weights": {
@@ -629,7 +631,8 @@ window.BEANY_DATA = {
             "stability": 0.281,
             "energy": 0.27,
             "curiosity": 0.268
-          }
+          },
+          "identity_code": "木_正印_中年"
         },
         "day5_decision": {
           "dominant": "木",
@@ -640,7 +643,8 @@ window.BEANY_DATA = {
             "stability": 0.259,
             "energy": 0.284,
             "curiosity": 0.31
-          }
+          },
+          "identity_code": "木_正印_中年"
         },
         "day1_update": {
           "health": 55,
@@ -652,11 +656,11 @@ window.BEANY_DATA = {
             "curiosity": 0.31
           },
           "weights": {
-            "**：木30": 25.0,
-            "水16": 21.0,
-            "火18": 19.0,
-            "金16": 15.0,
-            "土20": 20.0
+            "木": 25.0,
+            "水": 21.0,
+            "火": 19.0,
+            "金": 15.0,
+            "土": 20.0
           }
         },
         "day2_update": {
@@ -669,9 +673,9 @@ window.BEANY_DATA = {
             "curiosity": 0.32
           },
           "weights": {
-            "**：木25": 20.0,
-            "土20": 24.0,
-            "金15": 16.0
+            "木": 20.0,
+            "土": 24.0,
+            "金": 16.0
           }
         },
         "day3_update": {
@@ -684,11 +688,11 @@ window.BEANY_DATA = {
             "curiosity": 0.3
           },
           "weights": {
-            "**：木20": 25.0,
-            "金16": 10.0,
-            "火19": 20.0,
-            "土24": 24.0,
-            "水21": 21.0
+            "木": 25.0,
+            "金": 10.0,
+            "火": 20.0,
+            "土": 24.0,
+            "水": 21.0
           }
         },
         "day4_update": {
@@ -701,11 +705,11 @@ window.BEANY_DATA = {
             "curiosity": 0.268
           },
           "weights": {
-            "**：木25": 30.0,
-            "火20": 16.0,
-            "土24": 24.0,
-            "金10": 9.0,
-            "水21": 21.0
+            "木": 30.0,
+            "火": 16.0,
+            "土": 24.0,
+            "金": 9.0,
+            "水": 21.0
           }
         },
         "day5_update": {
@@ -718,11 +722,11 @@ window.BEANY_DATA = {
             "curiosity": 0.31
           },
           "weights": {
-            "**：木30": 34.0,
-            "火16": 17.0,
-            "土24": 19.0,
-            "金9": 10.0,
-            "水21": 20.0
+            "木": 34.0,
+            "火": 17.0,
+            "土": 19.0,
+            "金": 10.0,
+            "水": 20.0
           }
         },
         "day6_update": {
@@ -735,11 +739,11 @@ window.BEANY_DATA = {
             "curiosity": 0.301
           },
           "weights": {
-            "**：木34": 39.0,
-            "火17": 18.0,
-            "土19": 19.0,
-            "金10": 9.0,
-            "水20": 15.0
+            "木": 39.0,
+            "火": 18.0,
+            "土": 19.0,
+            "金": 9.0,
+            "水": 15.0
           }
         },
         "day7_update": {
@@ -753,11 +757,11 @@ window.BEANY_DATA = {
             "curiosity": 0.31
           },
           "weights": {
-            "**：木39": 43.0,
-            "火18": 18.0,
-            "土19": 14.0,
-            "金9": 10.0,
-            "水15": 15.0
+            "木": 43.0,
+            "火": 18.0,
+            "土": 14.0,
+            "金": 10.0,
+            "水": 15.0
           }
         }
       }
@@ -1396,7 +1400,9 @@ window.BEANY_DATA = {
           "age": "childhood",
           "identity_code": "wood_食神_childhood"
         },
-        "day0_decision": {},
+        "day0_decision": {
+          "identity_code": "木_食神_幼年"
+        },
         "day1_decision": {
           "weights": {
             "金": 21.0,
@@ -1413,7 +1419,8 @@ window.BEANY_DATA = {
             "stability": 0.285,
             "energy": 0.298,
             "curiosity": 0.321
-          }
+          },
+          "identity_code": "木_食神_幼年"
         },
         "day2_decision": {
           "weights": {
@@ -1431,7 +1438,8 @@ window.BEANY_DATA = {
             "stability": 0.269,
             "energy": 0.29,
             "curiosity": 0.339
-          }
+          },
+          "identity_code": "金_食神_青年"
         },
         "day3_decision": {
           "weights": {
@@ -1449,7 +1457,8 @@ window.BEANY_DATA = {
             "stability": 0.297,
             "energy": 0.314,
             "curiosity": 0.327
-          }
+          },
+          "identity_code": "木_食神_青年"
         },
         "day4_decision": {
           "weights": {
@@ -1467,7 +1476,8 @@ window.BEANY_DATA = {
             "stability": 0.298,
             "energy": 0.291,
             "curiosity": 0.328
-          }
+          },
+          "identity_code": "木_食神_中年"
         },
         "day5_decision": {
           "weights": {
@@ -1485,7 +1495,8 @@ window.BEANY_DATA = {
             "stability": 0.316,
             "energy": 0.279,
             "curiosity": 0.32
-          }
+          },
+          "identity_code": "木_食神_中年"
         },
         "day6_decision": {
           "weights": {
@@ -1503,7 +1514,8 @@ window.BEANY_DATA = {
             "stability": 0.311,
             "energy": 0.284,
             "curiosity": 0.342
-          }
+          },
+          "identity_code": "木_食神_稳定"
         },
         "day7_decision": {
           "weights": {
@@ -1521,7 +1533,8 @@ window.BEANY_DATA = {
             "stability": 0.304,
             "energy": 0.284,
             "curiosity": 0.332
-          }
+          },
+          "identity_code": "木_食神_稳定"
         },
         "day2_update": {},
         "day3_update": {}

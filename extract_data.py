@@ -124,8 +124,12 @@ def extract_timeline(run_dir, run_id):
             if ax and len(ax) >= 3: entry["5_axis"] = ax
 
             # Identity code
+            # identity code: try colon format, then next-line format
             m = re.search(r'(?:人格码|identity_code|性格编号)\s*[：:]\s*(.+?)(?:\n|$)', txt)
             if m: entry["identity_code"] = m.group(1).strip().replace('*','')
+            if not entry.get("identity_code"):
+                m = re.search(r'##\s*性格编号\s*\n+\s*(.+?)\n', txt)
+                if m: entry["identity_code"] = m.group(1).strip().replace('*','')
 
             timeline[day_key] = entry
 
@@ -153,22 +157,23 @@ def extract_timeline(run_dir, run_id):
                 m = re.search(rf'{a}\s+[\d.]+\s*→\s*([\d.]+)', idtxt)
                 if m: ax[a] = round(float(m.group(1)), 4)
             if ax and len(ax) >= 3: entry["5_axis"] = ax
-            # weights from "木39→43, 火18→18, ..."
-            m = re.search(r'权重更新[：：\s]*([^。\n]+)', idtxt)
+            # weights from "**权重更新**：木39→43, 火18→18, ..."
+            m = re.search(r'权重更新[^:：]*[：:]\s*(.+?)(?:\n|$)', idtxt)
             if m:
                 w = {}
-                for part in m.group(1).split(','):
+                raw = m.group(1)
+                for part in raw.split(','):
                     part = part.strip()
                     if '→' not in part: continue
-                    parts2 = part.split('→')
-                    elem = parts2[0].strip()
-                    after = parts2[1].strip().rstrip('%')
-                    for e in ["木","火","土","金","水"]:
-                        if after.startswith(e):
-                            after = after[len(e):]; break
-                    try: w[elem] = float(after)
+                    kv = part.split('→')
+                    elem_raw = kv[0].strip()
+                    elem = elem_raw[0] if elem_raw and elem_raw[0] in "木火土金水" else ""
+                    try:
+                        val_str = kv[1].strip().rstrip('%')
+                        w[elem] = float(val_str)
                     except: pass
-                if w: entry["weights"] = w
+                if w:
+                    entry["weights"] = w
             timeline[day_key] = entry
 
     return timeline
